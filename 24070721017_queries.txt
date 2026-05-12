@@ -1,0 +1,86 @@
+-- Checks login credentials and active status
+SELECT * FROM users
+WHERE username=%s AND password_hash=%s AND is_active=TRUE;
+
+
+-- Inserts a new student record
+INSERT INTO students (name, department, marks)
+VALUES (%s, %s, %s);
+
+
+-- Displays all students sorted by ID
+SELECT id, name, department, marks
+FROM students
+ORDER BY id;
+
+
+-- Searches students department-wise (case insensitive)
+SELECT id, name, department, marks
+FROM students
+WHERE LOWER(department) = LOWER(%s)
+ORDER BY id;
+
+
+-- Updates marks of a student
+UPDATE students
+SET marks = %s
+WHERE id = %s;
+
+
+-- Deletes a student record
+DELETE FROM students
+WHERE id = %s;
+
+
+-- Shows total, average, highest and lowest marks
+SELECT COUNT(*), AVG(marks), MAX(marks), MIN(marks)
+FROM students;
+
+
+-- Displays grade-wise student distribution
+SELECT
+SUM(CASE WHEN marks >= 90 THEN 1 ELSE 0 END) AS A,
+SUM(CASE WHEN marks BETWEEN 75 AND 89 THEN 1 ELSE 0 END) AS B,
+SUM(CASE WHEN marks BETWEEN 60 AND 74 THEN 1 ELSE 0 END) AS C,
+SUM(CASE WHEN marks BETWEEN 40 AND 59 THEN 1 ELSE 0 END) AS D,
+SUM(CASE WHEN marks < 40 THEN 1 ELSE 0 END) AS F
+FROM students;
+
+
+-- Shows top 3 scoring students
+SELECT id, name, department, marks
+FROM students
+ORDER BY marks DESC
+LIMIT 3;
+
+
+-- Ranks departments by average marks
+SELECT department, AVG(marks) AS avg_marks
+FROM students
+GROUP BY department
+ORDER BY avg_marks DESC;
+
+
+-- Adds bonus marks with maximum cap of 100
+UPDATE students
+SET marks = LEAST(marks + %s, 100)
+WHERE LOWER(department) = LOWER(%s);
+
+
+-- Exports students scoring above average marks
+SELECT id, name, department, marks
+FROM students
+WHERE marks > (SELECT AVG(marks) FROM students);
+
+
+-- Displays latest audit log entries
+SELECT id, user_id, action, details, timestamp
+FROM audit_log
+ORDER BY timestamp DESC
+LIMIT 20;
+
+
+-- Enables or disables user accounts
+UPDATE users
+SET is_active = %s
+WHERE username = %s;
